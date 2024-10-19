@@ -28,17 +28,17 @@ async function fetchHoroscope() {
     }
 }
 
-// Обработчик команды /start
+
 tgBot.onText(/\/start/, async (msg) => {
     chatId = msg.chat.id; 
     tgBot.sendMessage(chatId, 'Привет! Вот твой гороскоп на сегодня:');
 
-    // Получаем гороскоп и отправляем его пользователю
+    
     const horoscope = await fetchHoroscope(); 
     tgBot.sendMessage(chatId, formatHoroscope(horoscope), { parse_mode: 'Markdown' }); 
 });
 
-// Обработчик команды /horoscope
+
 tgBot.onText(/\/horoscope/, async (msg) => {
     const horoscope = await fetchHoroscope(); 
 
@@ -49,7 +49,7 @@ tgBot.onText(/\/horoscope/, async (msg) => {
     }
 });
 
-// Форматируем текст гороскопа
+
 const formatHoroscope = (horoscopeText) => {
     return `
 *Гороскоп на сегодня* 🔮:
@@ -60,8 +60,8 @@ _${horoscopeText}_
     `;
 };
 
-// Планируем отправку гороскопа каждый день в 9:00
-const job = schedule.scheduleJob('* * * * *', async () => {
+
+const job = schedule.scheduleJob('0 9 * * *', async () => {
     if (chatId) {
         const horoscope = await fetchHoroscope(); 
         const formattedHoroscope = formatHoroscope(horoscope);
