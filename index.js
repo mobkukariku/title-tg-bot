@@ -3,12 +3,17 @@ const cheerio = require('cheerio');
 const TelegramBot = require('node-telegram-bot-api');
 const schedule = require('node-schedule');
 
-const url = 'https://horo.mail.ru/';
-const tg_token = '7280405687:AAGzb2mREiOBOPKxBdzQAjDAMl6HRfFCdME'; 
+
+require('dotenv').config();
+
+const url = process.env.HOROSCOPE_URL;  
+const tg_token = process.env.TELEGRAM_TOKEN;  
+const allowedUserId = parseInt(process.env.ALLOWED_USER_ID);  
+const channel_id = process.env.CHANNEL_ID;  
+
 
 const tgBot = new TelegramBot(tg_token, { polling: true });
 
-let chatId; 
 
 async function fetchHoroscope() {
     try {
@@ -29,27 +34,6 @@ async function fetchHoroscope() {
 }
 
 
-tgBot.onText(/\/start/, async (msg) => {
-    chatId = msg.chat.id; 
-    tgBot.sendMessage(chatId, 'Привет! Вот твой гороскоп на сегодня:');
-
-    
-    const horoscope = await fetchHoroscope(); 
-    tgBot.sendMessage(chatId, formatHoroscope(horoscope), { parse_mode: 'Markdown' }); 
-});
-
-
-tgBot.onText(/\/horoscope/, async (msg) => {
-    const horoscope = await fetchHoroscope(); 
-
-    if (horoscope) {
-        tgBot.sendMessage(chatId, formatHoroscope(horoscope), { parse_mode: 'Markdown' }); 
-    } else {
-        tgBot.sendMessage(chatId, 'Не удалось получить гороскоп.');
-    }
-});
-
-
 const formatHoroscope = (horoscopeText) => {
     return `
 *Гороскоп на сегодня* 🔮:
@@ -61,12 +45,36 @@ _${horoscopeText}_
 };
 
 
-const job = schedule.scheduleJob('0 9 * * *', async () => {
-    if (chatId) {
-        const horoscope = await fetchHoroscope(); 
-        const formattedHoroscope = formatHoroscope(horoscope);
-        tgBot.sendMessage(chatId, formattedHoroscope, { parse_mode: 'Markdown' });
-    } else {
-        console.log('chatId не найден. Убедитесь, что пользователь запустил бота с командой /start.');
+const isAllowedUser = (msg) => {
+    return msg.from.id === allowedUserId;
+};
+
+
+tgBot.onText(/\/start/, (msg) => {
+    if (!isAllowedUser(msg)) {
+        return tgBot.sendMessage(msg.chat.id, 'У вас нет прав для выполнения этой команды.');
     }
+    
+    tgBot.sendMessage(msg.chat.id, 'Привет! Я буду публиковать гороскопы в ваш канал.');
+});
+
+tgBot.onText(/\/horoscope/, async (msg) => {
+    if (!isAllowedUser(msg)) {
+        return tgBot.sendMessage(msg.chat.id, 'У вас нет прав для выполнения этой команды.');
+    }
+
+    const horoscope = await fetchHoroscope(); 
+
+    if (horoscope) {
+        const formattedHoroscope = formatHoroscope(horoscope);
+        tgBot.sendMessage(channel_id, formattedHoroscope, { parse_mode: 'Markdown' });
+    } else {
+        tgBot.sendMessage(msg.chat.id, 'Не удалось получить гороскоп.');
+    }
+});
+
+const job = schedule.scheduleJob('0 9 * * *', async () => {
+    const horoscope = await fetchHoroscope(); 
+    const formattedHoroscope = formatHoroscope(horoscope);
+    tgBot.sendMessage(channel_id, formattedHoroscope, { parse_mode: 'Markdown' });
 });
