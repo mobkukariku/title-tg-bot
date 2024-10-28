@@ -1,11 +1,9 @@
 const axios = require('axios');
-const cheerio = require('cheerio'); 
 const TelegramBot = require('node-telegram-bot-api');
 const schedule = require('node-schedule');
 
 require('dotenv').config();
-
-const url = process.env.HOROSCOPE_URL;  
+ 
 const tg_token = process.env.TELEGRAM_TOKEN;  
 const channel_id = process.env.CHANNEL_ID;  
 const weather_token = process.env.WEATHER_TOKEN;
