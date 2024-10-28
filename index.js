@@ -7,7 +7,6 @@ require('dotenv').config();
 
 const url = process.env.HOROSCOPE_URL;  
 const tg_token = process.env.TELEGRAM_TOKEN;  
-const allowedUserId = parseInt(process.env.ALLOWED_USER_ID);  
 const channel_id = process.env.CHANNEL_ID;  
 const weather_token = process.env.WEATHER_TOKEN;
 
@@ -23,9 +22,6 @@ const fetchWeather = async (cityName) => {
     }
 };
 
-const isAllowedUser = (msg) => {
-    return msg.from.id === allowedUserId;
-};
 
 const kelvinToCelsius = (temp) => {
     return Math.round(temp - 273.15).toFixed(2);
@@ -33,7 +29,7 @@ const kelvinToCelsius = (temp) => {
 
 tgBot.onText(/\/start/, (msg) => {
     
-    tgBot.sendMessage(msg.chat.id, 'Привет! это тест');
+    tgBot.sendMessage(msg.chat.id, 'Привет! чтобы узнать погоду введите команду /weather и название города');
 });
 
 tgBot.onText(/\/weather(?:\s+(.+))?/, async (msg, match) => {
@@ -47,7 +43,6 @@ tgBot.onText(/\/weather(?:\s+(.+))?/, async (msg, match) => {
     const weather = data.weather[0].description;
     const temp = data.main.temp;
     const message = messagePattern(cityName, temp, weather);
-    console.log(msg.chat.id);
 
     tgBot.sendMessage(msg.chat.id, message, {parse_mode: 'Markdown'});
 });
