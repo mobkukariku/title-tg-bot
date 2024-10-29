@@ -60,7 +60,7 @@ const messagePattern = (cityName, temp, weather, hourlyForecast) => {
 🌡️ Температура: *${kelvinToCelsius(temp)}°C*
 ☁️ Погода: *${weather}*
 ---------------------------------------
-${getClothingAdvice(kelvinToCelsius(temp))}
+${getClothingAdvice(kelvinToCelsius(temp), weather)}
 ---------------------------------------
 ${hourlyForecastPattern(hourlyForecast)}
     `;
